@@ -101,19 +101,71 @@ ESP32 모듈형 시스템 시작
 
 ## 🔄 OTA 업데이트 방법
 
-### 자동 배포 (권장)
+### 📊 시스템 작동 방식
+
+**핵심:** `UserConfig.h`의 버전 번호를 변경하면 → `version.txt`가 자동 동기화 → ESP32가 감지!
+
+```mermaid
+graph LR
+    A[UserConfig.h<br/>CURRENT_FIRMWARE_VERSION = 2] --> B{어떻게 업데이트?}
+    B -->|방법 1| C[python scripts/deploy.py]
+    B -->|방법 2| D[git push]
+    C --> E[deploy.py가<br/>version.txt 업데이트]
+    D --> F[GitHub Actions가<br/>version.txt 업데이트]
+    E --> G[version.txt = 2]
+    F --> G
+    G --> H[ESP32가 부팅 시<br/>버전 확인]
+    H --> I{버전 비교}
+    I -->|다름| J[OTA 다운로드 & 업데이트 🔄]
+    I -->|같음| K[정상 실행 ✅]
+```
+
+---
+
+### 방법 1: 자동 배포 (deploy.py) ⚡
+
+**완전 자동화된 방법**
 
 ```bash
 python scripts/deploy.py
 ```
 
 **실행 순서:**
-1. 버전 자동 증가 (1 → 2)
-2. "컴파일 하세요" 메시지 → Arduino IDE에서 **Verify** 클릭
-3. Enter 키 입력
-4. 자동으로 GitHub에 업로드 ✅
+1. ✅ 버전 자동 증가 (2 → 3)
+2. ✅ "컴파일 하세요" 메시지 → Arduino IDE에서 **Verify** 클릭
+3. ✅ Enter 키 입력
+4. ✅ `version.txt` 업데이트 (3)
+5. ✅ `update.bin` 복사
+6. ✅ 자동으로 GitHub에 업로드
 
-### ESP32가 자동으로:
+---
+
+### 방법 2: 수동 배포 (Git Push) 🚀
+
+**코드만 수정하고 바로 push**
+
+1. **`UserConfig.h` 수정**
+   ```cpp
+   #define CURRENT_FIRMWARE_VERSION 3  // 2 → 3으로 변경
+   ```
+
+2. **컴파일 & 배포**
+   ```bash
+   # Arduino IDE에서 Verify (컴파일)
+   
+   git add .
+   git commit -m "Update to v3"
+   git push
+   ```
+
+3. **GitHub Actions 자동 실행** 🤖
+   - `UserConfig.h`에서 버전 3 감지
+   - `version.txt`를 자동으로 3으로 업데이트
+   - ESP32가 새 버전 감지!
+
+---
+
+### ESP32 자동 업데이트 프로세스
 1. 부팅 시 서버 버전 확인
 2. 새 버전 감지 → 다운로드
 3. 업데이트 완료 → 재부팅
