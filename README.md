@@ -1,18 +1,23 @@
-# 🚀 ESP32 OTA Template with NeoPixel
+# 🚀 ESP32 OTA Update Template
 
-**버전 관리 OTA 업데이트**와 **네오픽셀 제어**가 통합된 ESP32 템플릿입니다.
+**버전 관리 기능이 있는 ESP32 OTA 업데이트 템플릿**
 
-[![GitHub](https://img.shields.io/badge/GitHub-Public-green)](https://github.com/Fuzzyline-HAS2/updated_neopixel_hyo)
+GitHub에서 펌웨어를 관리하고 ESP32 기기를 무선으로 업데이트하세요.
+
+[![GitHub](https://img.shields.io/badge/GitHub-Public-green)](https://github.com/Fuzzyline-HAS2/OTA_update_template)
+
+> **⭐ 이 프로젝트는 템플릿입니다!**  
+> `NeoPixel.ino`는 **예시 모듈**일 뿐입니다. 자신의 프로젝트에 맞게 **자유롭게 수정하거나 삭제**하세요!
 
 ---
 
 ## ✨ 주요 기능
 
 - ✅ **자동 OTA 업데이트** - GitHub에서 새 버전 자동 감지 및 다운로드
-- ✅ **버전 관리** - 버전 번호 기반으로 업데이트 여부 결정
+- ✅ **버전 관리** - 업그레이드/다운그레이드 모두 지원
 - ✅ **모듈형 구조** - 새 기능 추가가 쉬운 확장 가능한 구조
-- ✅ **네오픽셀 예제** - 엔코더 제어 + 타이머 애니메이션 포함
-- ✅ **안전 장치** - OTA 실패 시 자동 롤백
+- ✅ **예시 포함** - NeoPixel 제어 예제 (삭제 가능)
+- ✅ **안전 장치** - OTA 실패 시 자동 롤백, 재부팅 방지
 
 ---
 
@@ -130,6 +135,46 @@ updated_neopixel_hyo/
 ├── version.txt                # 서버 버전 번호
 └── update.bin                 # OTA 펌웨어 파일
 ```
+
+---
+
+## 🔧 예시 모듈 교체하기 (중요!)
+
+**`NeoPixel.ino`는 단순한 예시입니다!** 자신의 프로젝트로 교체하세요.
+
+### 방법 1: NeoPixel 모듈 삭제하고 새로 만들기
+
+1. **`SignedOTA/NeoPixel.ino` 파일 삭제**
+2. **자신의 모듈 파일 생성** (예: `MyProject.ino`)
+   ```cpp
+   void initMyProject() {
+     Serial.println("[MyProject] 초기화 시작...");
+     // 센서, 액추에이터 등 초기화
+     Serial.println("[MyProject] 초기화 완료\\n");
+   }
+
+   void updateMyProject() {
+     // 반복 실행할 로직
+     // 센서 읽기, 데이터 전송 등
+   }
+   ```
+3. **`Main.ino` 수정**
+   ```cpp
+   void setup() {
+     // ...
+     initOTA();
+     initMyProject();  // ← NeoPixel 대신 자신의 모듈
+   }
+
+   void loop() {
+     updateMyProject();  // ← NeoPixel 대신 자신의 모듈
+   }
+   ```
+
+### 방법 2: NeoPixel 모듈 수정해서 사용
+
+`NeoPixel.ino` 파일을 열어서 내용을 자신의 코드로 교체하세요.  
+파일 이름은 그대로 두고 내용만 바꿔도 됩니다!
 
 ---
 
