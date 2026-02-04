@@ -208,7 +208,7 @@ void updateNeoPixel() {
     uint32_t rainbowColor = strip.gamma32(strip.ColorHSV(pixelHue, 255, 255));
 
     // 2. 흰색 정의
-    uint32_t whiteColor = strip.Color(255, 0, 0); // RGB White
+    uint32_t whiteColor = strip.Color(255, 255, 255); // RGB White
 
     // 3. 최종 색상 혼합 (블렌딩)
     uint32_t finalColor = mixColors(whiteColor, rainbowColor, currentBlend);
