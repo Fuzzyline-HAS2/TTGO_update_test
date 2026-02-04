@@ -106,18 +106,38 @@ ESP32 모듈형 시스템 시작
 **핵심:** `UserConfig.h`의 버전 번호를 변경하면 → `version.txt`가 자동 동기화 → ESP32가 감지!
 
 ```mermaid
-graph LR
-    A[UserConfig.h<br/>CURRENT_FIRMWARE_VERSION = 2] --> B{어떻게 업데이트?}
-    B -->|방법 1| C[python scripts/deploy.py]
-    B -->|방법 2| D[git push]
-    C --> E[deploy.py가<br/>version.txt 업데이트]
-    D --> F[GitHub Actions가<br/>version.txt 업데이트]
-    E --> G[version.txt = 2]
+graph TB
+    A["📝 UserConfig.h<br/><br/>CURRENT_FIRMWARE_VERSION = 2"]
+    
+    A --> B{"🤔 어떻게<br/>업데이트?"}
+    
+    B -->|"⚡ 방법 1"| C["💻 python scripts/deploy.py"]
+    B -->|"🚀 방법 2"| D["📤 git push"]
+    
+    C --> E["🔧 deploy.py가<br/>version.txt 업데이트"]
+    D --> F["🤖 GitHub Actions가<br/>version.txt 업데이트"]
+    
+    E --> G["📄 version.txt = 2"]
     F --> G
-    G --> H[ESP32가 부팅 시<br/>버전 확인]
-    H --> I{버전 비교}
-    I -->|다름| J[OTA 다운로드 & 업데이트 🔄]
-    I -->|같음| K[정상 실행 ✅]
+    
+    G --> H["🔌 ESP32 부팅"]
+    
+    H --> I{"🔍 버전 비교<br/><br/>서버 vs 로컬"}
+    
+    I -->|"버전 다름"| J["🔄 OTA 다운로드<br/>& 업데이트<br/>& 재부팅"]
+    I -->|"버전 같음"| K["✅ 정상 실행<br/><br/>NeoPixel 작동"]
+    
+    style A fill:#e3f2fd
+    style B fill:#fff3e0
+    style C fill:#f3e5f5
+    style D fill:#e8f5e9
+    style E fill:#f3e5f5
+    style F fill:#e8f5e9
+    style G fill:#fff9c4
+    style H fill:#e1f5fe
+    style I fill:#fff3e0
+    style J fill:#ffebee
+    style K fill:#e8f5e9
 ```
 
 ---
