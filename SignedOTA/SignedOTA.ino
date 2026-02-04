@@ -76,68 +76,90 @@ void execOTA() {
 
   HTTPClient http;
   WiFiClientSecure client;
-  client.setInsecure(); // GitHub와 같이 HTTPS를 사용하는 경우 SSL 인증서 검증
-  client.setHandshakeTimeout(30000); // [중요] 핸드쉐이크 타임아웃 30초 설정
+  client.setInsecure();
+  client.setHandshakeTimeout(30000);
 
   http.begin(client, String(firmware_url));
   http.setFollowRedirects(HTTPC_FORCE_FOLLOW_REDIRECTS);
-  http.setTimeout(30000); // [중요] HTTP 타임아웃 30초 설정
+  http.setTimeout(30000);
 
   int httpCode = http.GET();
-  if (httpCode > 0) {
-    if (httpCode == HTTP_CODE_OK) {
-      int contentLength = http.getSize();
-      Serial.printf("Download Size: %d bytes\n", contentLength);
 
-      if (contentLength <= 0) {
-        Serial.println("❌ Error: Content-Length is invalid (0 or missing)");
-        http.end();
-        return;
-      }
-
-      // OTA 업데이트 시작 가능 여부 확인
-      // Update.begin()은 파티션 크기를 확인하고 업데이트 준비를 합니다.
-      bool canBegin = Update.begin(contentLength);
-
-      if (canBegin) {
-        Serial.println("OTA 업데이트를 시작합니다. 잠시만 기다려주세요...");
-
-        // 다운로드된 스트림 데이터를 업데이트 파티션에 직접 기록합니다.
-        size_t written = Update.writeStream(http.getStream());
-
-        if (written == contentLength) {
-          Serial.println("Written : " + String(written) + " successfully");
-        } else {
-          Serial.println("Written only : " + String(written) + "/" +
-                         String(contentLength) + ". Retry?");
-        }
-
-        if (Update.end()) {
-          Serial.println("✅ OTA 완료!");
-          if (Update.isFinished()) {
-            Serial.println(
-                "업데이트가 성공적으로 완료되었습니다. 재부팅합니다...");
-            ESP.restart();
-          } else {
-            Serial.println(
-                "업데이트가 완전히 종료되지 않았습니다. 문제가 발생했습니다.");
-          }
-        } else {
-          Serial.println("❌ 오류 발생. 오류 코드: " +
-                         String(Update.getError()));
-        }
-      } else {
-        Serial.println("❌ OTA를 시작할 공간이 부족합니다.");
-      }
+  // [안전장치 1] HTTP 200 OK가 아니면 즉시 중단
+  if (httpCode != HTTP_CODE_OK) {
+    Serial.printf("❌ 펌웨어 다운로드 실패 (HTTP 코드: %d)\n", httpCode);
+    if (httpCode > 0) {
+      Serial.printf("❌ 에러: %s\n", http.errorToString(httpCode).c_str());
     } else {
-      Serial.printf("❌ HTTP connect failed, error: %s\n",
-                    http.errorToString(httpCode).c_str());
+      Serial.println("❌ 연결 실패. 네트워크를 확인하세요.");
     }
-  } else {
-    Serial.printf("❌ GET failed, error: %s\n",
-                  http.errorToString(httpCode).c_str());
+    http.end();
+    client.stop();
+    return; // 재부팅하지 않고 종료
   }
+
+  // [안전장치 2] Content-Length 검증
+  int contentLength = http.getSize();
+  Serial.printf("다운로드 크기: %d bytes\n", contentLength);
+
+  if (contentLength <= 0 || contentLength > 2000000) {
+    Serial.println("❌ 오류: 잘못된 파일 크기");
+    http.end();
+    client.stop();
+    return;
+  }
+
+  // [안전장치 3] Update 시작 가능 여부 확인
+  if (!Update.begin(contentLength)) {
+    Serial.println("❌ OTA를 시작할 공간이 부족합니다.");
+    http.end();
+    client.stop();
+    return;
+  }
+
+  Serial.println("OTA 업데이트를 시작합니다. 잠시만 기다려주세요...");
+
+  // 다운로드 및 기록
+  size_t written = Update.writeStream(http.getStream());
+
+  // [안전장치 4] 완전히 다운로드되었는지 확인
+  if (written != contentLength) {
+    Serial.printf("❌ 다운로드 불완전: %d / %d bytes\n", written,
+                  contentLength);
+    Update.abort(); // Update 롤백
+    http.end();
+    client.stop();
+    return; // 재부팅하지 않음
+  }
+
+  Serial.printf("✅ %d bytes 다운로드 완료\n", written);
+
+  // [안전장치 5] Update 종료 및 검증
+  if (!Update.end(true)) { // true = 성공 시에만 커밋
+    Serial.printf("❌ 업데이트 실패: %d\n", Update.getError());
+    Update.abort();
+    http.end();
+    client.stop();
+    return; // 재부팅하지 않음
+  }
+
+  // [안전장치 6] 최종 확인
+  if (!Update.isFinished()) {
+    Serial.println("❌ 업데이트가 완전히 종료되지 않았습니다.");
+    http.end();
+    client.stop();
+    return; // 재부팅하지 않음
+  }
+
+  Serial.println("✅ OTA 완료!");
+  Serial.println(
+      "업데이트가 성공적으로 완료되었습니다. 3초 후 재부팅합니다...");
+
   http.end();
+  client.stop();
+  delay(3000);
+
+  ESP.restart(); // 모든 검증을 통과한 경우에만 재부팅
 }
 
 void initOTA() {

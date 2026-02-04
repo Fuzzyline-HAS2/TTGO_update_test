@@ -19,7 +19,7 @@
 // 1. 핀 및 상수 설정
 // ---------------------------
 // 네오픽셀
-#define NEOPIXEL_PIN 22
+#define NEOPIXEL_PIN 18
 #define PIXEL_COUNT 6
 #define BRIGHTNESS_MAX 255
 
@@ -190,9 +190,7 @@ void updateNeoPixel() {
     if (currentBlend > targetBlend)
       currentBlend = targetBlend;
   } else if (currentBlend > targetBlend) {
-    currentBlend -= blendSpeed; // 감소 로직
-    if (currentBlend < targetBlend)
-      currentBlend = targetBlend;
+    currentBlend = 0;
   }
 
   // 무지개 흐름 업데이트
@@ -210,7 +208,7 @@ void updateNeoPixel() {
     uint32_t rainbowColor = strip.gamma32(strip.ColorHSV(pixelHue, 255, 255));
 
     // 2. 흰색 정의
-    uint32_t whiteColor = strip.Color(255, 255, 255); // RGB White
+    uint32_t whiteColor = strip.Color(255, 0, 0); // RGB White
 
     // 3. 최종 색상 혼합 (블렌딩)
     uint32_t finalColor = mixColors(whiteColor, rainbowColor, currentBlend);

@@ -1,127 +1,254 @@
-# 📘 Signed OTA 통합 사용자 가이드
+# 🚀 ESP32 OTA Template with NeoPixel
 
-이 문서는 **Signed OTA (보안 무선 업데이트)** 템플릿의 모든 기능을 다루는 통합 가이드입니다.
-새 프로젝트 생성부터 설정, 배포, 문제 해결까지 모든 내용을 담고 있습니다.
+**버전 관리 OTA 업데이트**와 **네오픽셀 제어**가 통합된 ESP32 템플릿입니다.
 
----
-
-## 📑 목차
-1.  **시작하기 (Getting Started)**
-    *   [옵션 A] 기존 프로젝트 사용하기
-    *   [옵션 B] 새 프로젝트 만들기 (GitHub Template)
-2.  **설정 (Configuration)**
-    *   필수 도구 설치
-    *   보안 키 생성 (필수!)
-    *   코드 설정 (WiFi & URL)
-3.  **배포하기 (Deployment)**
-    *   자동 배포 (추천)
-    *   수동 빌드 및 서명
-4.  **고급 사용법**
-    *   여러 대의 기기 관리
-5.  **문제 해결 (Troubleshooting)**
+[![GitHub](https://img.shields.io/badge/GitHub-Public-green)](https://github.com/Fuzzyline-HAS2/updated_neopixel_hyo)
 
 ---
 
-## 1. 시작하기 (Getting Started)
+## ✨ 주요 기능
 
-### [옵션 A] 기존 프로젝트 사용하기
-이미 만들어진 이 저장소를 그대로 사용하여 테스트하려면, 저장소를 **Clone** 또는 **Download ZIP** 하여 PC에 저장하세요.
-
-### [옵션 B] 새 프로젝트 만들기 (GitHub Template) 🚀
-이 저장소를 '틀(Template)'로 삼아 나만의 새로운 기기용 저장소를 만들 수 있습니다.
-
-1.  GitHub 웹사이트의 이 저장소 페이지에서 **"Use this template"** 버튼 -> **"Create a new repository"**를 클릭합니다.
-2.  새 저장소 이름(예: `My_Smart_Home_V1`)을 짓고 생성합니다.
-3.  생성된 내 저장소를 PC로 **Clone** 해옵니다.
-    > **팁**: 이렇게 하면 기존 코드를 복사/붙여넣기 할 필요 없이 바로 시작할 수 있습니다!
+- ✅ **자동 OTA 업데이트** - GitHub에서 새 버전 자동 감지 및 다운로드
+- ✅ **버전 관리** - 버전 번호 기반으로 업데이트 여부 결정
+- ✅ **모듈형 구조** - 새 기능 추가가 쉬운 확장 가능한 구조
+- ✅ **네오픽셀 예제** - 엔코더 제어 + 타이머 애니메이션 포함
+- ✅ **안전 장치** - OTA 실패 시 자동 롤백
 
 ---
 
-## 2. 설정 (Configuration)
+## 📋 필수 준비물
 
-### 2.1 필수 도구 설치
-*   **VS Code** 및 **Arduino Extension** (또는 Arduino IDE)
-*   **Python 3.x**: [공식 홈페이지](https://www.python.org/downloads/)에서 설치 (설치 시 "Add Python to PATH" 체크 필수)
-*   **필수 라이브러리**: 터미널에서 아래 명령어 실행
-    ```bash
-    pip install cryptography
-    ```
+### 하드웨어
+- **ESP32 Dev Module** 또는 **ESP32-S3**
+- NeoPixel LED (선택사항)
+- 로터리 엔코더 (선택사항)
 
-### 2.2 보안 키 생성 (⚠️ 중요)
-보안을 위해 **반드시** 자신만의 키를 생성해야 합니다. (템플릿을 그대로 쓰면 키가 공개되어 위험합니다.)
+### 소프트웨어
+- [Arduino IDE](https://www.arduino.cc/en/software) 또는 VS Code + Arduino Extension
+- [Python 3.x](https://www.python.org/downloads/)
+- Git
 
-터미널을 열고 다음 명령어를 실행하세요:
+---
+
+## 🎯 빠른 시작 (5분 완성)
+
+### 1️⃣ 저장소 복사
+
+**방법 A: Template 사용 (권장)**
+1. GitHub에서 **"Use this template"** 버튼 클릭
+2. 새 저장소 이름 입력 (예: `my-esp32-project`)
+3. **Public**으로 설정 (중요!)
+4. 생성된 저장소를 로컬에 clone
+
 ```bash
-python scripts/generate_keys.py
+git clone https://github.com/YOUR_USERNAME/my-esp32-project.git
+cd my-esp32-project
 ```
-*   실행하면 `private_key.pem` (비공개 키)과 `SignedOTA/public_key.h` (공개 키)가 새로 생성됩니다.
-*   **주의**: `private_key.pem` 파일은 절대 남에게 공유하거나 GitHub에 올리지 마세요! (자동으로 `.gitignore` 처리됩니다.)
 
-### 2.3 코드 설정 (`SignedOTA/UserConfig.h`)
-`SignedOTA/UserConfig.h` 파일을 열어 다음 내용을 수정합니다.
+**방법 B: 직접 Clone**
+```bash
+git clone https://github.com/Fuzzyline-HAS2/updated_neopixel_hyo.git
+cd updated_neopixel_hyo
+```
+
+### 2️⃣ WiFi 설정
+
+`SignedOTA/UserConfig.h` 파일을 열고 수정:
 
 ```cpp
 // 1. 와이파이 설정
-const char *ssid = "내_와이파이_이름";
-const char *password = "와이파이_비번";
+const char *ssid = "내_WiFi_이름";
+const char *password = "WiFi_비밀번호";
 
-// 2. 펌웨어 다운로드 주소
-// [중요] 내 GitHub 저장소의 'Raw' 파일 주소를 적어야 합니다.
-const char *firmware_url = "https://raw.githubusercontent.com/내아이디/내저장소/main/update.bin";
+// 2. 펌웨어 다운로드 주소 (GitHub 저장소 경로)
+const char *firmware_url = "https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/update.bin";
+
+// 버전 정보 URL
+const char *version_url = "https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/version.txt";
+```
+
+> **중요:** `YOUR_USERNAME`과 `YOUR_REPO`를 실제 값으로 변경하세요!
+
+### 3️⃣ 첫 업로드 (USB)
+
+1. Arduino IDE에서 `SignedOTA/Main.ino` 열기
+2. **Tools** 설정:
+   - Board: `ESP32 Dev Module` 또는 `ESP32S3 Dev Module`
+   - Partition Scheme: `Minimal SPIFFS (1.9MB APP with OTA/190KB SPIFFS)`
+   - Upload Speed: `115200`
+3. **Upload** (Ctrl+U)
+
+### 4️⃣ 동작 확인
+
+Serial Monitor (115200 baud) 확인:
+
+```
+ESP32 모듈형 시스템 시작
+====================================
+
+[OTA 모듈] 와이파이 연결 성공!
+[OTA 모듈] 서버 버전: 1, 현재 버전: 1
+[OTA 모듈] ✅ 최신 버전 사용 중 (v1)
+[NeoPixel 모듈] 초기화 완료
 ```
 
 ---
 
-## 3. 배포하기 (Deployment)
+## 🔄 OTA 업데이트 방법
 
-### 3.1 자동 배포 (추천) ⚡
-코드를 수정하고 전 세계의 기기들을 업데이트하고 싶다면, **스크립트 하나만 실행**하면 됩니다.
+### 자동 배포 (권장)
 
-1.  터미널에서 아래 명령어 입력:
-    ```bash
-    python scripts/deploy.py
-    ```
-2.  스크립트가 시키는 대로 진행:
-    *   자동으로 버전(`CURRENT_FIRMWARE_VERSION`)이 1 올라갑니다.
-    *   **"컴파일 하세요"** 문구가 뜨면 VS Code에서 **Verify(컴파일)** 버튼을 누릅니다.
-    *   컴파일이 끝나면 터미널에서 **Enter** 키를 누릅니다.
-3.  **결과**: 자동으로 파일이 서명되고, 이름이 바뀌고, GitHub에 업로드됩니다. 기기들이 자동으로 업데이트됩니다.
+```bash
+python scripts/deploy.py
+```
 
-### 3.2 수동 빌드 및 서명 (고급 사용자용)
-수동으로 과정을 이해하고 싶다면 다음 순서로 진행합니다.
-1.  아두이노 IDE에서 'Export Compiled Binary'로 빌드합니다.
-2.  `scripts/sign_firmware.py`를 이용해 서명합니다.
-    ```bash
-    python scripts/sign_firmware.py <입력파일.bin> private_key.pem update.bin
-    ```
-3.  생성된 `update.bin`을 GitHub에 직접 커밋 & 푸시합니다.
+**실행 순서:**
+1. 버전 자동 증가 (1 → 2)
+2. "컴파일 하세요" 메시지 → Arduino IDE에서 **Verify** 클릭
+3. Enter 키 입력
+4. 자동으로 GitHub에 업로드 ✅
+
+### ESP32가 자동으로:
+1. 부팅 시 서버 버전 확인
+2. 새 버전 감지 → 다운로드
+3. 업데이트 완료 → 재부팅
 
 ---
 
-## 4. 고급 사용법
+## 📂 프로젝트 구조
 
-### 여러 대의 기기 관리 (Multi-Device)
-기기 A와 기기 B가 서로 다른 동작을 해야 한다면?
-
-1.  **GitHub에 파일을 따로 올립니다.**
-    *   예: `device_A_update.bin`, `device_B_update.bin`
-2.  **각 기기의 `UserConfig.h`를 다르게 설정합니다.**
-    *   기기 A: `firmware_url = ".../device_A_update.bin"`
-    *   기기 B: `firmware_url = ".../device_B_update.bin"`
-3.  **배포할 때**: 원하는 기기의 코드를 수정하고, 해당 파일 이름으로 빌드하여 업로드하면 **그 기기들만** 업데이트됩니다.
+```
+updated_neopixel_hyo/
+├── SignedOTA/
+│   ├── Main.ino              # 메인 진입점 (setup/loop)
+│   ├── SignedOTA.ino          # OTA 업데이트 모듈
+│   ├── NeoPixel.ino           # 네오픽셀 제어 모듈
+│   ├── UserConfig.h           # WiFi 및 URL 설정
+│   └── public_key.h           # OTA 서명 키
+├── scripts/
+│   └── deploy.py              # 자동 배포 스크립트
+├── version.txt                # 서버 버전 번호
+└── update.bin                 # OTA 펌웨어 파일
+```
 
 ---
 
-## 5. 문제 해결 (Troubleshooting)
+## 🔧 새 모듈 추가하기
 
-### Q. "Connection Refused" 또는 "Timeout" 오류가 떠요.
-*   **원인**: GitHub 서버와 연결하는 데 시간이 너무 오래 걸려서 ESP32가 포기한 경우입니다.
-*   **해결**: `SignedOTA.ino`의 `client.setHandshakeTimeout(30000);` 부분이 있는지 확인하세요. 타임아웃을 30초 이상으로 늘려야 합니다.
+### 1. 새 파일 생성: `SignedOTA/NewModule.ino`
 
-### Q. "Space Not Enough" (공간 부족) 오류가 떠요.
-*   **원인**: GitHub에 올라간 파일이 너무 클 때(예: 4MB 통합 바이너리) 발생합니다.
-*   **해결**: `scripts/deploy.py`를 사용하여 배포하세요. 이 스크립트는 자동으로 용량이 작은(1MB 내외) OTA 전용 파일을 선택하여 올립니다.
+```cpp
+void initNewModule() {
+  Serial.println("[NewModule] 초기화 시작...");
+  // 초기화 코드
+  Serial.println("[NewModule] 초기화 완료\\n");
+}
 
-### Q. "Signature Mismatch" (서명 불일치) 오류가 떠요.
-*   **원인**: 기기에 들어있는 `public_key.h`와, 배포된 파일을 서명한 `private_key.pem`이 서로 다른 쌍일 때 발생합니다.
-*   **해결**: `python scripts/generate_keys.py`를 다시 실행하고, 기기에 USB로 펌웨어를 다시 업로드(Upload)하여 키를 맞춰주세요.
+void updateNewModule() {
+  // 반복 실행할 코드
+}
+```
+
+### 2. Main.ino에 추가
+
+```cpp
+void setup() {
+  Serial.begin(115200);
+  delay(2000);
+  
+  initOTA();
+  initNeoPixel();
+  initNewModule();     // ← 추가!
+}
+
+void loop() {
+  updateNeoPixel();
+  updateNewModule();   // ← 추가!
+}
+```
+
+**끝!** 모듈이 자동으로 통합됩니다.
+
+---
+
+## 🛡️ 안전 기능
+
+### 자동 안전장치 6단계
+
+1. ✅ HTTP 200 OK 검증
+2. ✅ 파일 크기 검증
+3. ✅ 다운로드 완전성 확인
+4. ✅ Update 실패 시 자동 롤백
+5. ✅ 모든 검증 통과 시에만 재부팅
+6. ✅ 에러 시 안전하게 중단
+
+### 버전 체크 시스템
+
+- **같은 버전** → OTA 스킵, 정상 부팅
+- **새 버전** → 자동 다운로드 및 업데이트
+- **에러** → 안전하게 스킵, 재부팅 안함
+
+---
+
+## 🎨 네오픽셀 핀 변경
+
+`SignedOTA/NeoPixel.ino`:
+
+```cpp
+#define NEOPIXEL_PIN 18  // 원하는 GPIO 번호로 변경
+```
+
+**ESP32-S3 권장 핀:** 8, 18, 16, 17
+
+---
+
+## ❓ 문제 해결
+
+### Q1. "404 Not Found" 에러
+
+**원인:** GitHub 저장소가 Private
+
+**해결:** Settings → Change repository visibility → **Make public**
+
+### Q2. OTA 다운로드가 느려요 (1분 이상)
+
+**정상입니다!** 1MB 파일을 WiFi로 다운로드하는데 1~2분 소요됩니다.
+
+### Q3. "connection refused" 에러
+
+**해결:** 
+- WiFi 연결 확인
+- GitHub URL 정확한지 확인
+- 리포지토리가 Public인지 확인
+
+### Q4. 매번 같은 펌웨어를 다운로드해요
+
+**해결:** `version.txt`와 `UserConfig.h`의 버전 번호를 확인하세요.
+
+---
+
+## 📚 더 알아보기
+
+- [상세 사용 가이드](docs/USER_GUIDE.md)
+- [ESP32 Arduino Core](https://github.com/espressif/arduino-esp32)
+
+---
+
+## 💡 주요 팁
+
+1. **리포지토리는 반드시 Public으로!**
+2. **Partition Scheme은 "Minimal SPIFFS with OTA" 사용**
+3. **첫 업로드는 USB, 이후는 OTA**
+4. **`deploy.py` 스크립트 활용하면 편리함**
+
+---
+
+## 📄 라이선스
+
+MIT License
+
+---
+
+**만든이:** Fuzzyline-HAS2  
+**템플릿 버전:** 1.0  
+**최종 업데이트:** 2026-02-04
