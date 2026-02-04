@@ -169,19 +169,43 @@ python scripts/deploy.py
    #define CURRENT_FIRMWARE_VERSION 3  // 2 → 3으로 변경
    ```
 
-2. **컴파일 & 배포**
-   ```bash
-   # Arduino IDE에서 Verify (컴파일)
+2. **Arduino IDE에서 컴파일**
+   - `Main.ino` 파일 열기
+   - **Sketch → Export Compiled Binary** (Ctrl+Alt+S)
+   - 컴파일 완료 대기
+
+3. **생성된 .bin 파일을 `update.bin`으로 복사**
    
-   git add .
+   **Windows PowerShell:**
+   ```powershell
+   # build 폴더에서 가장 최신 .bin 파일 찾기
+   $binFile = Get-ChildItem -Path "SignedOTA\build" -Recurse -Filter "*.bin" | 
+              Where-Object { $_.Name -notmatch "merged|bootloader|partitions|boot_app" } | 
+              Sort-Object LastWriteTime -Descending | 
+              Select-Object -First 1
+   
+   # update.bin으로 복사
+   Copy-Item $binFile.FullName -Destination "update.bin"
+   ```
+   
+   **또는 수동으로:**
+   - `SignedOTA/build/esp32.esp32.esp32s3/` 폴더 열기
+   - `Main.ino.bin` 파일을 프로젝트 루트로 복사
+   - 이름을 `update.bin`으로 변경
+
+4. **Git에 추가 및 Push**
+   ```bash
+   git add SignedOTA/UserConfig.h update.bin
    git commit -m "Update to v3"
    git push
    ```
 
-3. **GitHub Actions 자동 실행** 🤖
+5. **GitHub Actions 자동 실행** 🤖
    - `UserConfig.h`에서 버전 3 감지
    - `version.txt`를 자동으로 3으로 업데이트
    - ESP32가 새 버전 감지!
+
+> **💡 팁:** 복잡하다면 그냥 `python scripts/deploy.py` 사용하세요!
 
 ---
 
