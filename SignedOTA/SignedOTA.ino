@@ -191,16 +191,16 @@ void initOTA() {
     if (serverVersion == -1) {
       // 버전 확인 실패
       Serial.println("[OTA 모듈] ⚠️ 버전 확인 실패. OTA 스킵");
-    } else if (serverVersion > CURRENT_FIRMWARE_VERSION) {
-      // 새 버전 발견!
-      Serial.printf("[OTA 모듈] 🆕 새 버전 발견! (현재: v%d → 서버: v%d)\n",
+    } else if (serverVersion != CURRENT_FIRMWARE_VERSION) {
+      // 버전이 다르면 무조건 업데이트 (업그레이드 또는 다운그레이드)
+      Serial.printf("[OTA 모듈] 🔄 버전 불일치 감지! (현재: v%d → 서버: v%d)\n",
                     CURRENT_FIRMWARE_VERSION, serverVersion);
       Serial.println("[OTA 모듈] 5초 후 펌웨어 다운로드를 시작합니다...");
       delay(5000);
       checkOTA();
     } else {
       // 최신 버전 사용 중
-      Serial.printf("[OTA 모듈] ✅ 최신 버전 사용 중 (v%d)\n",
+      Serial.printf("[OTA 모듈] ✅ 서버와 동일한 버전 (v%d)\n",
                     CURRENT_FIRMWARE_VERSION);
       Serial.println("[OTA 모듈] OTA 스킵");
     }
