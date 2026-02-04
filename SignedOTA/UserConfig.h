@@ -16,8 +16,12 @@ const char *password = "GGA48@6587";
 const char *firmware_url = "https://raw.githubusercontent.com/Fuzzyline-HAS2/"
                            "update_test_hyo/main/update.bin";
 
+// 버전 정보 파일 URL (version.txt)
+const char *version_url = "https://raw.githubusercontent.com/Fuzzyline-HAS2/"
+                          "update_test_hyo/main/version.txt";
+
 // 3. 디버그 및 버전 정보
-#define CURRENT_FIRMWARE_VERSION 16
+#define CURRENT_FIRMWARE_VERSION 17
 
 // ==========================================
 #endif
