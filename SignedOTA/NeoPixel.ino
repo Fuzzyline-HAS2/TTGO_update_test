@@ -14,6 +14,7 @@
 */
 
 #include <Adafruit_NeoPixel.h>
+#include <esp_arduino_version.h>
 
 // ---------------------------
 // 1. 핀 및 상수 설정
@@ -99,12 +100,30 @@ void IRAM_ATTR onTimer() {
 // ---------------------------
 // 4. 초기화 및 유틸리티
 // ---------------------------
+// 타이머 설정 (ESP32 Core 버전에 따른 분기 처리)
+// 타이머 설정 (ESP32 Core 버전에 따른 분기 처리)
 void timerSetting() {
-  // ESP32 Core 3.0+ 문법 (timerBegin(주파수))
-  // 만약 컴파일 에러가 나면 timerBegin(0, 80, true); 로 변경해보세요 (구버전)
-  timer = timerBegin(1000000);
+#if ESP_ARDUINO_VERSION_MAJOR >= 3
+  // [ISP32 Arduino Core 3.0 이상]
+  timer = timerBegin(1000000); // 1MHz (1us 단위)
+  if (timer == NULL) {
+    Serial.println("❌ [오류] 타이머 초기화 실패! (Core 3.x)");
+    return;
+  }
   timerAttachInterrupt(timer, &onTimer);
   timerAlarm(timer, timerPeriod, true, 0);
+#else
+  // [ESP32 Arduino Core 2.x 이하]
+  // 0번 타이머, 80 분주(1us), true(카운트업)
+  timer = timerBegin(0, 80, true);
+  if (timer == NULL) {
+    Serial.println("❌ [오류] 타이머 초기화 실패! (Core 2.x)");
+    return;
+  }
+  timerAttachInterrupt(timer, &onTimer, true); // true = Edge Trigger
+  timerAlarmWrite(timer, timerPeriod, true);   // 2초, 자동 반복
+  timerAlarmEnable(timer);
+#endif
 }
 
 // 색상 혼합 함수 (Ratio: 0.0 ~ 1.0)
@@ -208,7 +227,7 @@ void updateNeoPixel() {
     uint32_t rainbowColor = strip.gamma32(strip.ColorHSV(pixelHue, 255, 255));
 
     // 2. 흰색 정의
-    uint32_t whiteColor = strip.Color(255, 255, 255); // RGB White
+    uint32_t whiteColor = strip.Color(0, 255, 0); // RGB White
 
     // 3. 최종 색상 혼합 (블렌딩)
     uint32_t finalColor = mixColors(whiteColor, rainbowColor, currentBlend);

@@ -1,6 +1,7 @@
 private_key.pem
-SignedOTA/UserConfig.h
 build/
 SignedOTA/build/
 __pycache__/
 *.pkl
+*.bin
+*.elf
