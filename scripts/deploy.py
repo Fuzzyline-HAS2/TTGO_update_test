@@ -81,9 +81,10 @@ def git_push(version):
         print(f"📝 version.txt를 {version}로 업데이트했습니다.")
         
         # Git 작업
-        subprocess.run(["git", "add", OUTPUT_FILENAME], check=True)
-        subprocess.run(["git", "add", CONFIG_FILE], check=True) # 버전 바뀐 설정파일도 함께
-        subprocess.run(["git", "add", version_file], check=True) # version.txt도 추가
+        subprocess.run(["git", "add", "."], check=True) # 모든 변경사항 추가 (소스코드 포함)
+        # subprocess.run(["git", "add", OUTPUT_FILENAME], check=True) # 이전 코드: 개별 파일만 추가됨
+        # subprocess.run(["git", "add", CONFIG_FILE], check=True) 
+        # subprocess.run(["git", "add", version_file], check=True)
         subprocess.run(["git", "commit", "-m", f"Firmware Update v{version}"], check=True)
         subprocess.run(["git", "push"], check=True)
         print("✅ 업로드 완료!")
