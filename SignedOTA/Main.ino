@@ -31,11 +31,13 @@ void setup() {
   Serial.println("\n====================================");
   Serial.println("   모든 모듈 초기화 완료!");
   Serial.println("====================================\n");
+
+  Serial.println("마지막 테스트\n");
 }
 
 void loop() {
   // 각 모듈의 업데이트 함수 호출
-
+  
   // 여기에 새 모듈 업데이트 추가
   // updateNewModule();
 
